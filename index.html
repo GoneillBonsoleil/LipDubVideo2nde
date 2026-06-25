@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Video Awards 2026!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-gray-100 font-sans antialiased pb-12">
+
+    <div class="max-w-3xl mx-auto px-4 pt-12">
+        <header class="text-center mb-12">
+            <span class="bg-white/20 text-white text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full">End of Year Lip Dub Video Activity</span>
+            <h1 class="text-4xl md:text-5xl font-extrabold mt-3 tracking-tight">Vote for Your Favourite Video! 🎬</h1>
+            <p class="text-purple-100 mt-2 text-lg">Cast your vote below and watch the results update live.</p>
+        </header>
+
+        <main class="bg-white text-gray-800 rounded-2xl shadow-2xl p-6 md:p-8">
+            
+            <div id="voting-container" class="space-y-6">
+                </div>
+
+            <div id="status-message" class="hidden mt-8 p-4 bg-purple-50 text-purple-800 border border-purple-200 rounded-xl text-center font-medium">
+                Thank you! Your vote has been recorded. 🎉
+            </div>
+        </main>
+        
+        <div class="text-center mt-6">
+            <button onclick="resetVotes()" class="text-xs text-white/50 hover:text-white/80 underline transition">
+                Reset Device (For Testing Only)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 🛠️ CONFIGURATION: ADD YOUR FINALISTS HERE
+        // ==========================================
+        const FINALISTS = [
+            "Video A: Class Trip Highlights",
+            "Video B: Teachers' Dance-Off",
+            "Video C: Sports Day Bloopers",
+            "Video D: Year in Review Montage"
+        ];
+
+        // Initialize local storage data if it doesn't exist
+        if (!localStorage.getItem('videoVotes')) {
+            const initialVotes = {};
+            FINALISTS.forEach(name => initialVotes[name] = 0);
+            localStorage.setItem('videoVotes', JSON.stringify(initialVotes));
+        }
+
+        // Render the page on load
+        function renderPage() {
+            const votes = JSON.parse(localStorage.getItem('videoVotes'));
+            const hasVoted = localStorage.getItem('hasVoted');
+            const container = document.getElementById('voting-container');
+            
+            // Calculate total votes for percentage math
+            const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+
+            container.innerHTML = '';
+
+            FINALISTS.forEach(video => {
+                const voteCount = votes[video] || 0;
+                // Avoid dividing by zero
+                const percentage = totalVotes > 0 ? Math.round((voteCount / totalVotes) * 100) : 0;
+
+                const videoRow = document.createElement('div');
+                videoRow.className = "border border-gray-100 rounded-xl p-4 transition hover:shadow-md bg-gray-50/50";
+                
+                videoRow.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-semibold text-lg text-gray-700">${video}</span>
+                        <div class="text-right">
+                            <span class="font-bold text-purple-600 text-lg">${voteCount}</span>
+                            <span class="text-xs text-gray-400 block">${percentage}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full bg-gray-200 rounded-full h-3 mb-4 overflow-hidden">
+                        <div class="bg-purple-600 h-3 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+                    </div>
+
+                    ${!hasVoted ? `
+                        <button onclick="submitVote('${video.replace(/'/g, "\\'")}')" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition active:scale-[0.98]">
+                            Vote for this Video
+                        </button>
+                    ` : ''}
+                `;
+                container.appendChild(videoRow);
+            });
+
+            // Show thank you message if already voted
+            if (hasVoted) {
+                document.getElementById('status-message').classList.remove('hidden');
+            } else {
+                document.getElementById('status-message').classList.add('hidden');
+            }
+        }
+
+        // Handle vote submission
+        function submitVote(videoName) {
+            if (localStorage.getItem('hasVoted')) return;
+
+            const votes = JSON.parse(localStorage.getItem('videoVotes'));
+            votes[videoName] = (votes[videoName] || 0) + 1;
+
+            localStorage.setItem('videoVotes', JSON.stringify(votes));
+            localStorage.setItem('hasVoted', 'true');
+
+            renderPage();
+        }
+
+        // Clear votes function for testing purposes
+        function resetVotes() {
+            localStorage.removeItem('hasVoted');
+            // Un-comment the line below if you also want to wipe the current vote tallies back to 0
+            // localStorage.removeItem('videoVotes'); 
+            location.reload();
+        }
+
+        // Initial paint
+        renderPage();
+    </script>
+</body>
+</html>
